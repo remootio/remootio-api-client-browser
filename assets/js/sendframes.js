@@ -1,23 +1,23 @@
-var lastActionId = undefined; //counts from 0 to 0x7FFFFFFF this is the frame counter, it starts from initialActionId after the authentication happens. It is needed to send this with every action the client sends to the API, and always increment it by one (to prevent replay attacks)
-var ApiSessionKey = undefined; //ApiSessionKey is set if the communication has been authenticated
+let lastActionId = undefined; //counts from 0 to 0x7FFFFFFF this is the frame counter, it starts from initialActionId after the authentication happens. It is needed to send this with every action the client sends to the API, and always increment it by one (to prevent replay attacks)
+let ApiSessionKey = undefined; //ApiSessionKey is set if the communication has been authenticated
 
 //Send arbitrary websocket frame
 function sendarbitrarymsg(){
-    var arbmsg = document.getElementById('websocket_arbitrarymsg').value
+    let arbmsg = document.getElementById('websocket_arbitrarymsg').value
     console.log('Sending message: ',arbmsg)
     WebsocketSendMessage(arbmsg);
 }
 
 //Send an invalid JSON
 function sendinvalidjson(){
-    var toSend = "[something not a JSON }"
+    let toSend = "[something not a JSON }"
     console.log('Sending message: ',toSend)
     WebsocketSendMessage(toSend)
 }
 
 //Send a valid json but invalid input data to the API
 function sendinvalidinput(){
-    var toSend = {
+    let toSend = {
         random:"json data"
     }
     console.log('Sending message: ',toSend)
@@ -28,7 +28,7 @@ function sendinvalidinput(){
 
 //Send PING frame
 function sendping(){
-    var toSend = {
+    let toSend = {
         type:"PING"
     }
     console.log('Sending message: ',toSend)
@@ -37,7 +37,7 @@ function sendping(){
 
 //Send HELLO frame
 function sendhello(){
-    var toSend = {
+    let toSend = {
         type:"HELLO"
     }
     console.log('Sending message: ',toSend)
@@ -46,7 +46,7 @@ function sendhello(){
 
 //Send AUTH frame
 function sendauthmsg(){
-    var toSend = {
+    let toSend = {
         type:"AUTH"
     }
     console.log('Sending message: ',toSend)
@@ -59,7 +59,7 @@ function sendqueryaction(){
         alert('This action requires authentication, authenticate session first')
         return
     }
-    var toSendPayload = {
+    let toSendPayload = {
         action:{
             type:"QUERY",
             id: ((lastActionId+1)%0x7FFFFFFF) //id - the "frame counter for actions" must be higher than the previous value (we increment the state variable lastActionId when we get the response from the API to this action)
@@ -74,7 +74,7 @@ function sendtriggeraction(){
         alert('This action requires authentication, authenticate session first')
         return
     }
-    var toSendPayload = {
+    let toSendPayload = {
         action:{
             type:"TRIGGER",
             id: ((lastActionId+1)%0x7FFFFFFF) //id - the "frame counter for actions" must be higher than the previous value (we increment the state variable lastActionId when we get the response from the API to this action)
@@ -89,7 +89,7 @@ function sendopenaction(){
         alert('This action requires authentication, authenticate session first')
         return
     }
-    var toSendPayload = {
+    let toSendPayload = {
         action:{
             type:"OPEN",
             id: ((lastActionId+1)%0x7FFFFFFF) //id - the "frame counter for actions" must be higher than the previous value (we increment the state variable lastActionId when we get the response from the API to this action)
@@ -104,7 +104,7 @@ function sendcloseaction(){
         alert('This action requires authentication, authenticate session first')
         return
     }
-    var toSendPayload = {
+    let toSendPayload = {
         action:{
             type:"CLOSE",
             id: ((lastActionId+1)%0x7FFFFFFF) //id - the "frame counter for actions" must be higher than the previous value (we increment the state variable lastActionId when we get the response from the API to this action)
@@ -119,7 +119,7 @@ function sendrestartaction(){
         alert('This action requires authentication, authenticate session first')
         return
     }
-    var toSendPayload = {
+    let toSendPayload = {
         action:{
             type:"RESTART",
             id: ((lastActionId+1)%0x7FFFFFFF) //id - the "frame counter for actions" must be higher than the previous value (we increment the state variable lastActionId when we get the response from the API to this action)
@@ -132,10 +132,10 @@ function sendrestartaction(){
 //Local use only (in this file)
 function sendencryptedframe(unencryptedPayload){
     //get the ApiSecretKey from the text input
-    var ApiSecretKey = document.getElementById('api_secret_key').value //hexstring
+    let ApiSecretKey = document.getElementById('api_secret_key').value //hexstring
     //get the ApiAuthKey from the text input
-    var ApiAuthKey = document.getElementById('api_auth_key').value //hexstring
-    var encryptedFrame = remootioApiConstructEncrypedFrame(unencryptedPayload,ApiSecretKey,ApiAuthKey,ApiSessionKey)
+    let ApiAuthKey = document.getElementById('api_auth_key').value //hexstring
+    let encryptedFrame = remootioApiConstructEncrypedFrame(unencryptedPayload,ApiSecretKey,ApiAuthKey,ApiSessionKey)
     if (encryptedFrame != undefined){
         //Send the encryptedFrame as a JSON string
         console.log('Sending encrypted frame: ',encryptedFrame,' with the unencrypted payload: ',JSON.parse(unencryptedPayload))

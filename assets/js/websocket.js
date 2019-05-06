@@ -1,8 +1,8 @@
-var WebSocket_conn; //handle to the websocket connection
+let WebSocket_conn; //handle to the websocket connection
 
 //WS connect
 function wsconnect(){
-    var wsaddr= document.getElementById('websocket_addr').value
+    let wsaddr= document.getElementById('websocket_addr').value
     console.log('Connecting to ', wsaddr)
     WebSocket_conn = new WebSocket(wsaddr);
     wsConnecting()
@@ -16,17 +16,17 @@ function wsconnect(){
     };
    
     WebSocket_conn.onmessage = function (evt) { 
-        var incMsgJSON = JSON.parse(evt.data)
+        let incMsgJSON = JSON.parse(evt.data)
         console.log('Incoming message (json):',incMsgJSON)
         document.getElementById('messages_log').textContent += new Date().toLocaleTimeString()+' Incoming message (length:'+evt.data.length+'):\n'+evt.data + "\n"
         //Check if it's a message to decrypt
         if (incMsgJSON.type == "ENCRYPTED"){
             console.log('This is an enrypted frame, decrypting...')
             //get the ApiSecretKey from the text input
-            var ApiSecretKey = document.getElementById('api_secret_key').value //hexstring
+            let ApiSecretKey = document.getElementById('api_secret_key').value //hexstring
             //get the ApiAuthKey from the text input
-            var ApiAuthKey = document.getElementById('api_auth_key').value //hexstring
-            var decryptedPayloadJSON = remootioApiDecryptEncrypedFrame(incMsgJSON,ApiSecretKey,ApiAuthKey,ApiSessionKey) //pass the whole frame in the argument
+            let ApiAuthKey = document.getElementById('api_auth_key').value //hexstring
+            let decryptedPayloadJSON = remootioApiDecryptEncrypedFrame(incMsgJSON,ApiSecretKey,ApiAuthKey,ApiSessionKey) //pass the whole frame in the argument
             //If the message decryption is successful, we can handle the message
             if (decryptedPayloadJSON != undefined){
                 //We append the decrypted message to the log
