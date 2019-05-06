@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="assets/css/light.css">
+    <!--Styling using water.css https://github.com/kognise/water.css-->
+    <meta charset="utf-8">
+    <title>Remootio WebSocket API</title>
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script type="text/javascript" src="bower_components/crypto-js/crypto-js.js"></script>
+    <script type="text/javascript" src="assets/js/apicrypto.js"></script>
+    <script type="text/javascript" src="assets/js/websocket.js"></script>
+    <script type="text/javascript" src="assets/js/sendframes.js"></script>
+    <script type="text/javascript" src="assets/js/hexstring.js"></script>
+    <script type="text/javascript">
+        //Functions for the GUI
+         function wsDisconnected(){
+         	document.getElementById('WebSocket_State_Notconnected').style.display = 'block';
+         	document.getElementById('WebSocket_State_Connecting').style.display = 'none';
+         	document.getElementById('WebSocket_State_Connected').style.display = 'none';
+         	document.getElementById('WebSocket_State_Notsupported').style.display = 'none';
+         }
+         function wsConnecting(){
+         	document.getElementById('WebSocket_State_Notconnected').style.display = 'none';
+         	document.getElementById('WebSocket_State_Connecting').style.display = 'block';
+         	document.getElementById('WebSocket_State_Connected').style.display = 'none';
+         	document.getElementById('WebSocket_State_Notsupported').style.display = 'none';
+         }
+         function wsConnected(){
+         	document.getElementById('WebSocket_State_Notconnected').style.display = 'none';
+         	document.getElementById('WebSocket_State_Connecting').style.display = 'none';
+         	document.getElementById('WebSocket_State_Connected').style.display = 'block';
+         	document.getElementById('WebSocket_State_Notsupported').style.display = 'none';
+         }
+         function wsNotSupported(){
+         	document.getElementById('WebSocket_State_Notconnected').style.display = 'none';
+         	document.getElementById('WebSocket_State_Connecting').style.display = 'none';
+         	document.getElementById('WebSocket_State_Connected').style.display = 'none';
+         	document.getElementById('WebSocket_State_Notsupported').style.display = 'block';
+         }
+         if (!window.WebSocket){  
+         	alert("This browser does not support WebSockets!");
+         	wsNotSupported()	
+         }
+         
+         window.onload = function(){
+         		wsDisconnected()
+         		//Add functional styles here, so html is also self-contained
+         		document.getElementById('websocket_arbitrarymsg').setAttribute('style', 'width: 90%;');
+         		document.getElementById('websocket_arbitrarymsg').setAttribute('style', 'resize: vertical;');
+						document.getElementById('messages_log').setAttribute('style', 'white-space: pre;');
+         		document.getElementById('messages_log_container').setAttribute('style', 'overflow-y: scroll;');
+						document.getElementById('messages_log_container').setAttribute('style', 'max-height: 600px;');
+						 
+						 //Insert your Api Secret Key here:
+						document.getElementById('api_secret_key').value = ""
+						document.getElementById('api_auth_key').value = ""
+         }
+         //Disconnect if window closes
+         window.onbeforeunload = function() {
+         		WebSocket_conn.onclose = function () {};
+         		WebSocket_conn.close()
+         };
+         function clearlog(){
+			 document.getElementById('messages_log').textContent = ''
+			 console.clear()
+         }
+    </script>
+</head>
+
+<body>
+    <h1>Remootio websocket API test: </h1>
+    <div>
+        <h2>Configuration:</h2>
+        <p>Enter the API Secret Key and API Auth Key below. They can be found in the Remootio app in the API access menu for the specific device</p>
+        <div style="flex-direction:row; display:flex; flex-wrap: wrap;">
+            <div style="margin-left: 10px;">
+                Secret Key:
+                <textarea type="text" style="min-width:150px; height: 125px;" id="api_secret_key" value=""></textarea>
+            </div>
+            <div style="margin-left: 10px;">
+                Auth Key:
+                <textarea type="text" style="min-width:150px; height: 125px;" id="api_auth_key" value="" /></textarea>
+            </div>
+        </div>
+
+
+    </div>
+    <div id="WebSocket_State_Notsupported">
+        <h2>Error:</h2>
+        <p>This browser does not support WebSockets, please try in another browser (preferably the latest version of Chrome)</p>
+    </div>
+    <div id="WebSocket_State_Notconnected">
+        <h2>Connect to device:</h2>
+        <p>Enter the address of your device below. The API port is always 8080. You can find the IP address of your device in the Remootio app. If the address of your device is 192.168.1.13 you should enter ws://192.168.1.13:8080 in the text box below.</p>
+        <input type="text" id="websocket_addr" value="ws://<ip_address>:8080" />
+        <button onclick="javascript:wsconnect()">Connect</button>
+    </div>
+    <div id="WebSocket_State_Connecting">
+        <h2>Connecting to the device...</h2>
+        <p>This should not take more than a few seconds.</p>
+        <button onclick="javascript:wsdisconnect()">Cancel</button>
+    </div>
+    <div id="WebSocket_State_Connected">
+        <h2>Connected to the Remootio device</h2>
+        <h3>Send arbitrary messages to Remootio:</h3>
+        <textarea type="text" id="websocket_arbitrarymsg" value=""></textarea>
+        <button onclick="javascript:sendarbitrarymsg()">Send message</button>
+        <button onclick="javascript:wsdisconnect()">Disconnect</button>
+        <h3>Send pre-generated test messages to Remootio:</h3>
+        <p>To test error messages:</p>
+        <button onclick="javascript:sendinvalidjson()">Send invalid JSON</button>
+        <button onclick="javascript:sendinvalidinput()">Send invalid input</button>
+        <p>Frames that do NOT require authentication:</p>
+        <button onclick="javascript:sendping()">Send PING frame</button>
+        <button onclick="javascript:sendhello()">Send HELLO frame</button>
+        <button onclick="javascript:sendauthmsg()">Send AUTH frame</button>
+        <p>Frames that require authentication:</p>
+        <button onclick="javascript:sendqueryaction()">Send QUERY action</button>
+        <button onclick="javascript:sendtriggeraction()">Send TRIGGER action</button>
+        <button onclick="javascript:sendopenaction()">Send OPEN action</button>
+        <button onclick="javascript:sendcloseaction()">Send CLOSE action</button>
+        <button onclick="javascript:sendrestartaction()">Send RESTART action</button>
+
+    </div>
+    <p>Websocket message log (also visible in the javascript console):</p>
+    <button onclick="javascript:clearlog()">Clear log</button>
+    <br>
+    <div id=messages_log_container>
+        <p id="messages_log"></p>
+    </div>
+
+</body>
+
+</html>
